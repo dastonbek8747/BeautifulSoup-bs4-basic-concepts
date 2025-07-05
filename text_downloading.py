@@ -1,7 +1,6 @@
-import json
-
 from bs4 import BeautifulSoup
 import requests
+import json
 
 site_url = "https://www.olx.uz/oz/rabota/"
 response_url = requests.get(site_url)
@@ -33,28 +32,38 @@ soup = BeautifulSoup(response_url.text, 'lxml')
 
 
 # endi esa qiyinroq vazifa qilamiz. yani olgan malumotlarimizni listga dict korinishida yani json formatiga otkazib olamiz
-
+# bu yerda men olex saytidagi ishlarni kerakli malumotlarini olib turipaman
 all_divs_ = soup.find_all("div", class_="jobs-ad-card css-1ju4r67")
 jobs_json = []
+
 for job in all_divs_:
-    job_name = job.find("h4", class_="css-amfvow").text.strip()
-    job_price = job.find("p", class_="css-zgm539").text.strip()
-    job_address = job.find("span", class_="css-jw5wnz").text.strip()
-    time = job.find("p", class_="css-15khyzd").text.strip()
-    stavka = job.find("p", class_="css-15khyzd").text.strip()
-    date = job.find("p", class_="css-996jis").text.strip()
+    try:
+        job_name = job.find("h4", class_="css-amfvow").text.strip()
+        job_price = job.find("p", class_="css-zgm539").text.strip()
+        job_address = job.find("span", class_="css-pnkc9g").text.strip()
 
-    job_dic = {
-        "job_name": job_name,
-        "job_price": job_price,
-        "job_address": job_address,
-        "time": time,
-        "stavka": stavka,
-        "date": date
-    }
-    jobs_json.append(job_dic)
-    print("Succseffull +++++++++++++++++++++")
+        # Bu yerda ikki p teg bor, ularni list sifatida olamiz
+        info_ps = job.find_all("p", class_="css-15khyzd")
+        stavka = info_ps[1].text.strip() if len(info_ps) > 1 else ""
 
-print(len(jobs_json))
+        date = job.find("p", class_="css-996jis").text.strip()
+
+        job_dic = {
+            "job_name": job_name,
+            "job_price": job_price,
+            "job_address": job_address,
+            "stavka": stavka,
+            "date": date
+        }
+
+        jobs_json.append(job_dic)
+        print("✅ Malumot qo‘shildi")
+
+    except Exception as e:
+        print("❌ Xatolik:", e)
+        continue
+
+print(f"🔢 Umumiy: {len(jobs_json)} ta e'lon topildi.")
 print(json.dumps(jobs_json, indent=4, ensure_ascii=False))
-
+# bu orqaali printda json forrmatida chiqarib turadi
+#
